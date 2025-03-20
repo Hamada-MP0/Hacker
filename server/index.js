@@ -2,14 +2,30 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
+
+// إعداد CORS
+app.use(cors({
+  origin: "https://hacker-production-8851.up.railway.app",
+  methods: ["GET", "POST"],
+  credentials: true,
+}));
+
+// تقديم الملفات الثابتة (Static Files) من مجلد dist
+app.use(express.static(path.join(__dirname, "../client/dist")));
+
+// إعادة توجيه جميع الطلبات إلى index.html
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/dist", "index.html"));
+});
+
+// إعداد Socket.io
 const io = new Server(server, {
   cors: { origin: "*" },
 });
-
-app.use(cors());
 
 // عند اتصال المستخدمين بالخادم
 io.on("connection", (socket) => {
